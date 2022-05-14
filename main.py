@@ -356,7 +356,7 @@ async def jeton(ctx):
     await ctx.send(file=discord.File("images/tokenstemplate_edited.png"))
 
 @bot.command()
-async def getRandomText(ctx):
+async def rastgelemetin(ctx):
     num = random.randint(0, getNumTexts() - 1)
     await ctx.send(f"{num}. {getText(num)}")
 
@@ -398,16 +398,25 @@ async def deleteRandText(ctx):
         return message.channel == ctx.channel and message.author == ctx.author
         
     member = ctx.message.author
-    
-    liderler = discord.utils.get(member.guild.roles, name="Liderler")
-    mod_role = discord.utils.get(member.guild.roles, name="Moderatör")
-    yoldas = discord.utils.get(member.guild.roles, name="Yoldaş")
-    Zengin = discord.utils.get(member.guild.roles, name="Zengin")
-    guvunier = discord.utils.get(member.guild.roles, name="Güvenilir")
-    Yardimci = discord.utils.get(member.guild.roles, name="Yardımcı")
-    Bizimekip = discord.utils.get(member.guild.roles, name="Bizimekip")
 
-    if member.roles in [liderler, mod_role, yoldas, Zengin, guvunier, Yardimci, Bizimekip] or member.id == 751206285680181434:
+    can_access = False
+    
+    role_ids = [
+        810221843746390056,
+        810231463408173127,
+        818190484006633503,
+        888480560182358077,
+        837291848136654878,
+        912372948722122803,
+        925451222637498448,
+        820284664534532126
+    ]
+    
+    for r in member.roles:
+        if r.id in role_ids:
+            can_access = True
+            
+    if can_access:
         await ctx.send("Which one would you like to delete? (You must enter what number the text is)")
         try:
             number = await bot.wait_for('message', check=check, timeout=15.0)
@@ -420,20 +429,20 @@ async def deleteRandText(ctx):
             await ctx.send("Something went wrong.")
         else:
             try:
-                db["randText"][int(number.content)]
+                db["Rmetin"][int(number.content)]
             except:
                 await ctx.send("Your number is invalid.")
             else:
-                del db["randText"][int(number.content)]
+                del db["Rmetin"][int(number.content)]
                 await ctx.send(f"Deleted text number {number.content}.")
-    else:
+    elif can_access != True:
         await ctx.send("You cannot use this command.")
 
 """
 @bot.command()
 async def deleteAllRandTexts(ctx):
     await ctx.send("resetting all random texts for updates.")
-    db["randText"] = []
+    db["Rmetin"] = []
 """
 
 keep_alive()
