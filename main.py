@@ -16,21 +16,26 @@ with open("error.txt", "w") as f:
 client = discord.Client()
 bot = commands.Bot(command_prefix='<')
 
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        await ctx.send(f'This command is actually on cooldown, you can use it in {round(error.retry_after, 2)} seconds.')
+
 def addText(text):
-    if "randText" in db.keys():
-        texts = db["randText"]
+    if "Rmetin" in db.keys():
+        texts = db["Rmetin"]
         texts.append(text)
 
-        db["randText"] = texts
+        db["Rmetin"] = texts
     else:
         texts = []
         texts.append(text)
 
-        db["randText"] = texts
+        db["Rmetin"] = texts
 
 def getNumTexts():
-    if "randText" in db.keys():
-        all_texts = db["randText"]
+    if "Rmetin" in db.keys():
+        all_texts = db["Rmetin"]
         num = len(all_texts)
         
         return num
@@ -38,131 +43,78 @@ def getNumTexts():
         return 0
 
 def getText(number):
-    if "randText" in db.keys():
-        allTexts = db["randText"]
+    if "Rmetin" in db.keys():
+        allTexts = db["Rmetin"]
         try:
             return allTexts[number]
         except:
-            return "Debugger: There isn't any text."
+            return "Debugger: Hiçbir metin yok."
     else:
-        return ["...", "There isn't any!"][number]
+        return "Debugger: Hiçbir metin yok."
 
 def addTokens(userid, amount):
-    if str(userid) + "_tokens" in db.keys():
-        usertokens = db[str(userid) + "_tokens"]
+    if str(userid) + "_jetonlar" in db.keys():
+        usertokens = db[str(userid) + "_jetonlar"]
         usertokens += amount
 
-        db[str(userid) + "_tokens"] = usertokens
+        db[str(userid) + "_jetonlar"] = usertokens
     else:
-        db[str(userid) + "_tokens"] = 0
-        usertokens = db[str(userid) + "_tokens"]
+        db[str(userid) + "_jetonlar"] = 0
+        usertokens = db[str(userid) + "_jetonlar"]
         usertokens += amount
 
-        db[str(userid) + "_tokens"] = usertokens
+        db[str(userid) + "_jetonlar"] = usertokens
 
 def subtractTokens(userid, amount):
-    if str(userid) + "_tokens" in db.keys():
-        usertokens = db[str(userid) + "_tokens"]
+    if str(userid) + "_jetonlar" in db.keys():
+        usertokens = db[str(userid) + "_jetonlar"]
         usertokens -= amount
 
-        db[str(userid) + "_tokens"] = usertokens
+        db[str(userid) + "_jetonlar"] = usertokens
     else:
-        db[str(userid) + "_tokens"] = 0
-        usertokens = db[str(userid) + "_tokens"]
+        db[str(userid) + "_jetonlar"] = 0
+        usertokens = db[str(userid) + "_jetonlar"]
         usertokens -= amount
 
         if usertokens <= 0:
             usertokens = 0
 
-        db[str(userid) + "_tokens"] = usertokens
+        db[str(userid) + "_jetonlar"] = usertokens
 
 def getTokens(userid):
-    if str(userid) + "_tokens" in db.keys():
-        return db[str(userid) + "_tokens"]
+    if str(userid) + "_jetonlar" in db.keys():
+        return db[str(userid) + "_jetonlar"]
     else:
-        db[str(userid) + "_tokens"] = 0
-        return db[str(userid) + "_tokens"]
+        db[str(userid) + "_jetonlar"] = 0
+        return db[str(userid) + "_jetonlar"]
 
 def addLevels(userid, amount):
-    if str(userid) + "_levels" in db.keys():
-        userlevels = db[str(userid) + "_levels"]
+    if str(userid) + "_seviyeler" in db.keys():
+        userlevels = db[str(userid) + "_seviyeler"]
         userlevels += amount
 
-        db[str(userid) + "_levels"] = userlevels
+        db[str(userid) + "_seviyeler"] = userlevels
     else:
-        db[str(userid) + "_levels"] = 0
-        userlevels = db[str(userid) + "_levels"]
+        db[str(userid) + "_seviyeler"] = 0
+        userlevels = db[str(userid) + "_seviyeler"]
         userlevels += amount
 
-        db[str(userid) + "_levels"] = userlevels
+        db[str(userid) + "_seviyeler"] = userlevels
 
 def getLevels(userid):
-    if str(userid) + "_levels" in db.keys():
-        return db[str(userid) + "_levels"]
+    if str(userid) + "_seviyeler" in db.keys():
+        return db[str(userid) + "_seviyeler"]
     else:
-        db[str(userid) + "_levels"] = 0
-        return db[str(userid) + "_levels"]
+        db[str(userid) + "_seviyeler"] = 0
+        return db[str(userid) + "_seviyeler"]
 
 @bot.command()
-async def sourceCode(ctx):
-    await ctx.send("Here is the source code: <https://github.com/Aftermathic/BizimBot>")
+async def kaynakkodu(ctx):
+    await ctx.send("Kaynak kodu burada: <https://github.com/Aftermathic/BizimBot>")
 
 @bot.command()
-async def slots(ctx):
-    def check(message: discord.Message):
-        return message.channel == ctx.channel and message.author == ctx.author
-
-    symbols = [":grapes:", ":cherries:", ":lemon:", ":green_apple:", ":kiwi:", ":peach:"]
-
-    row1 = []
-    row2 = []
-    row3 = []
-
-    await ctx.send('Enter your bet!')
-
-    try:
-        bet = await bot.wait_for('message', check=check, timeout=15.0)
-    except asyncio.TimeoutError:
-        await ctx.send('You took too long to enter your bet.')
-    except:
-        await ctx.send("Something went wrong.")
-    else:
-        try:
-            int(bet.content)
-        except ValueError:
-            await ctx.send("Your bet wasn't a number...")
-        except:
-            await ctx.send("Something went wrong...")
-        else:
-            await ctx.send("Rolling...")
-
-            for i in range(3):
-                row1.append(random.choice(symbols))
-
-            for i in range(3):
-                row2.append(random.choice(symbols))
-
-            for i in range(3):
-                row3.append(random.choice(symbols))
-
-            t.sleep(5)
-
-            if row1[0] == row1[1] and row1[1] == row1[2] or row2[0] == row2[1] and row2[1] == row2[2] or row3[0] == row3[1] and row3[1] == row3[2]:
-                await ctx.send(row1[0] + row1[1] + row1[2] + "\n" + row2[0] + row2[1] + row2[2] + '\n' + row3[0] + row3[1] + row3[2] + "\n\nYou won! Your reward would have been **" + str(int(bet.content)) + "** if this wasn't just a simulation!")
-                print("sideways win")
-
-            elif row1[0] == row2[0] and row2[0] == row3[0] or row1[1] == row2[1] and row2[1] == row3[1] or row2[2] == row2[2] and row2[2] == row3[2]:
-                await ctx.send(row1[0] + row1[1] + row1[2] + "\n" + row2[0] + row2[1] + row2[2] + '\n' + row3[0] + row3[1] + row3[2] + "\n\nYou won! Your reward would have been **" + str(int(bet.content)) + "** if this wasn't just a simulation!")
-                print("downward win")
-
-            elif row1[0] == row2[1] and row2[1] == row3[2] or row1[2] == row2[1] and row2[1] == row3[0]:
-                await ctx.send(row1[0] + row1[1] + row1[2] + "\n" + row2[0] + row2[1] + row2[2] + '\n' + row3[0] + row3[1] + row3[2] + "\n\nYou won! Your reward would have been **" + str(int(bet.content)) + "** if this wasn't just a simulation!")
-                print("crossed win")
-            else:
-                await ctx.send(row1[0] + row1[1] + row1[2] + "\n" + row2[0] + row2[1] + row2[2] + '\n' + row3[0] + row3[1] + row3[2] + "\n\nYou lost. Your reward would have been **" + str(int(bet.content)) + "** if this wasn't just a simulation.")
-
-@bot.command()
-async def math(ctx):
+@commands.cooldown(1, 20, commands.BucketType.user)
+async def matematik(ctx):
     def check(message: discord.Message):
         return message.channel == ctx.channel and message.author == ctx.author
 
@@ -175,25 +127,23 @@ async def math(ctx):
             equation = str(a) + " x " + str(b)
         elif sign == 4:
             equation = str(a) + " ÷ " + str(b)
-        elif sign == 5:
-            equation = str(a) + " % " + str(b)
 
         return equation
 
-    await ctx.send("What subject would you like? (Please choose with a number.)\n\n1. Addition\n2. Subtraction\n3. Multiplication\n4. Division\n5. Modulus")
+    await ctx.send("Ne işlemi yapmak istiyorsun? (Lütfen sayısını belirt.)\n\n1. Toplama\n2. Çıkarma\n3. Çarpma\n4. Bölme")
 
     try:
         option = await bot.wait_for('message', check=check, timeout=15.0)
     except asyncio.TimeoutError:
-        await ctx.send('You took too long to enter your answer.')
+        await ctx.send('Cevap vermen çok uzun sürdü.')
     except:
-        await ctx.send("Something went wrong.")
+        await ctx.send("Bir şeyler ters gitti.")
     else:
         try:
             int(option.content)
         except:
-            await ctx.send("Something went wrong. We will choose your subject for you.")
-            operation = random.randint(1, 5)
+            await ctx.send("Bir şeyler ters gitti. Senin için işlemi ben seçiyorum.")
+            operation = random.randint(1, 4)
         else:
             operation = int(option.content)
 
@@ -202,171 +152,140 @@ async def math(ctx):
     t.sleep(1)
 
     if operation == 1:
-        a = random.randint(1, 100)
-        b = random.randint(1, 100)
+        a = random.randint(1, 20)
+        b = random.randint(1, 20)
 
         sum = a + b
 
         equation = generateEquation(a, b, 1)
 
-        await ctx.send("What is " + equation + "?")
+        await ctx.send("İşte soru: " + equation + " nedir?")
         
         try:
             answer = await bot.wait_for('message', check=check, timeout=15.0)
         except asyncio.TimeoutError:
-            await ctx.send('You took too long to enter your answer.')
+            await ctx.send('Cevap vermen çok uzun sürdü.')
         except:
-            await ctx.send("Something went wrong.")
+            await ctx.send("Bir şeyler ters gitti.")
         else:
             try:
                 int(answer.content)
             except ValueError:
-                await ctx.send("Your answer isn't a number.")
+                await ctx.send("Cevabın bir sayı değil.")
             except:
-                await ctx.send("Something went wrong.")
+                await ctx.send("Bir şeyler ters gitti.")
             else:
                 if answer.content == str(sum):
                     addTokens(ctx.author.id, reward_amount)
-                    await ctx.send("Good job! You got rewarded " + str(reward_amount) + " tokens!")
+                    await ctx.send("Güzel! " + str(reward_amount) + " tane jeton kazandın!")
                 else:
-                    await ctx.send("Sorry, the sum was " + str(sum) + ".")
+                    await ctx.send("Üzgünüm, cevap şuydu: " + str(sum) + ".")
     if operation == 2:
-        a = random.randint(1, 100)
-        b = random.randint(1, 100)
+        a = random.randint(1, 20)
+        b = random.randint(1, 20)
 
         difference = a - b
 
         equation = generateEquation(a, b, 2)
 
-        await ctx.send("What is " + equation + "?")
+        await ctx.send("İşte soru " + equation + " nedir?")
         
         try:
             answer = await bot.wait_for('message', check=check, timeout=15.0)
         except asyncio.TimeoutError:
-            await ctx.send('You took too long to enter your answer.')
+            await ctx.send('Cevap vermen çok uzun sürdü.')
         except:
-            await ctx.send("Something went wrong.")
+            await ctx.send("Bir şeyler ters gitti.")
         else:
             try:
                 int(answer.content)
             except ValueError:
-                await ctx.send("Your answer isn't a number.")
+                await ctx.send("Cevabın bir sayı değil.")
             except:
-                await ctx.send("Something went wrong.")
+                await ctx.send("Bir şeyler ters gitti.")
             else:
                 if answer.content == str(difference):
                     addTokens(ctx.author.id, reward_amount)
-                    await ctx.send("Good job! You got rewarded " + str(reward_amount) + " tokens!")
+                    await ctx.send("Güzel! " + str(reward_amount) + " tane jeton kazandın!")
                 else:
-                    await ctx.send("Sorry, the difference was " + str(difference) + ".")
+                    await ctx.send("Üzgünüm, cevap şuydu: " + str(difference) + ".")
     if operation == 3:
-        a = random.randint(1, 100)
-        b = random.randint(1, 100)
+        a = random.randint(1, 20)
+        b = random.randint(1, 20)
 
         product = a * b
 
         equation = generateEquation(a, b, 3)
 
-        await ctx.send("What is " + equation + "?")
+        await ctx.send("İşte soru " + equation + " nedir?")
         
         try:
             answer = await bot.wait_for('message', check=check, timeout=15.0)
         except asyncio.TimeoutError:
-            await ctx.send('You took too long to enter your answer.')
+            await ctx.send('Cevap vermen çok uzun sürdü.')
         except:
-            await ctx.send("Something went wrong.")
+            await ctx.send("Bir şeyler ters gitti.")
         else:
             try:
                 int(answer.content)
             except ValueError:
-                await ctx.send("Your answer isn't a number.")
+                await ctx.send("Cevabın bir sayı değil.")
             except:
-                await ctx.send("Something went wrong.")
+                await ctx.send("Bir şeyler ters gitti.")
             else:
                 if answer.content == str(product):
                     addTokens(ctx.author.id, reward_amount)
-                    await ctx.send("Good job! You got rewarded " + str(reward_amount) + " tokens!")
+                    await ctx.send("Güzel! " + str(reward_amount) + " tane jeton kazandın!")
                 else:
-                    await ctx.send("Sorry, the product was " + str(product) + ".")
+                    await ctx.send("Üzgünüm, cevap şuydu: " + str(product) + ".")
                     
     if operation == 4:
-        a = random.randint(1, 100)
-        b = random.randint(1, 100)
+        a = random.randint(1, 20)
+        b = random.randint(1, 20)
 
         while a % b != 0 and a != b:
-            b = random.randint(1, 100)
+            b = random.randint(1, 20)
 
         quotient = a / b
 
         equation = generateEquation(a, b, 4)
 
-        await ctx.send("What is " + equation + "?")
+        await ctx.send("İşte soru " + equation + " nedir?")
         
         try:
             answer = await bot.wait_for('message', check=check, timeout=15.0)
         except asyncio.TimeoutError:
-            await ctx.send('You took too long to enter your answer.')
+            await ctx.send('Cevap vermen çok uzun sürdü.')
         except:
-            await ctx.send("Something went wrong.")
+            await ctx.send("Bir şeyler ters gitti.")
         else:
             try:
                 int(answer.content)
             except ValueError:
-                await ctx.send("Your answer isn't a number.")
+                await ctx.send("Cevabın bir sayı değil.")
             except:
-                await ctx.send("Something went wrong.")
+                await ctx.send("Bir şeyler ters gitti.")
             else:
                 if answer.content == str(int(quotient)):
                     addTokens(ctx.author.id, reward_amount)
-                    await ctx.send("Good job! You got rewarded " + str(reward_amount) + " tokens!")
+                    await ctx.send("Güzel! " + str(reward_amount) + " tane jeton kazandın!")
                 else:
-                    await ctx.send("Sorry, the quotient was " + str(quotient) + ".")
-    if operation == 5:
-        a = random.randint(1, 100)
-        b = random.randint(1, 100)
-
-        while a < b:
-            a = random.randint(1, 100)
-
-        quotient = a % b
-
-        equation = generateEquation(a, b, 5)
-
-        await ctx.send("What is " + equation + "?")
-        
-        try:
-            answer = await bot.wait_for('message', check=check, timeout=15.0)
-        except asyncio.TimeoutError:
-            await ctx.send('You took too long to enter your answer.')
-        except:
-            await ctx.send("Something went wrong.")
-        else:
-            try:
-                int(answer.content)
-            except ValueError:
-                await ctx.send("Your answer isn't a number.")
-            except:
-                await ctx.send("Something went wrong.")
-            else:
-                if answer.content == str(int(quotient)):
-                    addTokens(ctx.author.id, reward_amount)
-                    await ctx.send("Good job! You got rewarded " + str(reward_amount) + " tokens!")
-                else:
-                    await ctx.send("Sorry, the quotient was " + str(int(quotient)) + ".")
+                    await ctx.send("Üzgünüm, cevap şuydu: " + str(quotient) + ".")
 
 @bot.command()
-async def coinFlip(ctx):
+@commands.cooldown(1, 20, commands.BucketType.user)
+async def yazıtura(ctx):
     def check(message: discord.Message):
         return message.channel == ctx.channel and message.author == ctx.author
-    await ctx.send("What will you bet for?\nHeads (1), or Tails (2) ?\nAnswer using the number next to the options.")
+    await ctx.send("Yazı mı tura mı?\nYazı (1), Tura (2) ?\nCevabını sayıya göre seç.")
     
     try:
         answer = await bot.wait_for('message', check=check, timeout=15.0)
         option = int(answer.content)
     except asyncio.TimeoutError:
-        await ctx.send("Sorry, you took too long.")
+        await ctx.send("Cevap vermen uzun sürdü.")
     except:
-        await ctx.send("Your answer was invalid.")
+        await ctx.send("Cevabın geçersiz.")
     else:
         reward = random.randint(5, 15)
         loss_amount = random.randint(5, 15)
@@ -375,20 +294,20 @@ async def coinFlip(ctx):
             coin_side = random.randint(1, 2)
             if coin_side == option:
                 addTokens(ctx.author.id, reward)
-                await ctx.send(f"You won! You earned {reward} tokens!")
+                await ctx.send(f"Kazandın! {reward} jeton kazandın!")
             else:
                 subtractTokens(ctx.author.id, loss_amount)
-                await ctx.send(f"You lost. You lost {loss_amount} tokens.")
+                await ctx.send(f"Kaybettin. {loss_amount} jeton kaybettin.")
         else:
-            await ctx.send("Your option is invalid.")
+            await ctx.send("Cevabın geçersiz.")
     
 @bot.command()
-async def getLevelCost(ctx):
+async def seviyebedeli(ctx):
     cost = getLevels(ctx.author.id) * 125
-    await ctx.send("You need " + str(cost) + " tokens.")
+    await ctx.send("Bir sonraki seviye için " + str(cost) + " tane jetona ihtiyacın var.")
 
 @bot.command()
-async def levelUp(ctx):
+async def seviyeatla(ctx):
     cost = getLevels(ctx.author.id) * 125
     usertokens = getTokens(ctx.author.id)
 
@@ -398,12 +317,12 @@ async def levelUp(ctx):
 
         newlv = getLevels(ctx.author.id)
 
-        await ctx.send("You have leveled up to level " + str(newlv) + "!")
+        await ctx.send("Seviye atladın! Artık " + str(newlv) + ". seviyedesin!")
     else:
-        await ctx.send("You don't have enough money to level up. You need " + str(cost - usertokens) + " more tokens.")
+        await ctx.send("Seviye atlayabilmek için yeterli jetonun yok. " + str(cost - usertokens) + " tane daha jetona ihtiyacın var.")
 
 @bot.command()
-async def myLevels(ctx):
+async def seviye(ctx):
     base = Image.open("images/levelstemplate.png").convert("RGBA")
     txt = Image.new("RGBA", base.size, (255,255,255,0))
 
@@ -420,7 +339,7 @@ async def myLevels(ctx):
     await ctx.send(file=discord.File("images/levelstemplate_edited.png"))
 
 @bot.command()
-async def myTokens(ctx):
+async def jeton(ctx):
     base = Image.open("images/tokenstemplate.png").convert("RGBA")
     txt = Image.new("RGBA", base.size, (255,255,255,0))
 
@@ -482,8 +401,13 @@ async def deleteRandText(ctx):
     
     liderler = discord.utils.get(member.guild.roles, name="Liderler")
     mod_role = discord.utils.get(member.guild.roles, name="Moderatör")
-    
-    if member.roles in [liderler, mod_role] or member.id == 751206285680181434:
+    yoldas = discord.utils.get(member.guild.roles, name="Yoldaş")
+    Zengin = discord.utils.get(member.guild.roles, name="Zengin")
+    guvunier = discord.utils.get(member.guild.roles, name="Güvenilir")
+    Yardimci = discord.utils.get(member.guild.roles, name="Yardımcı")
+    Bizimekip = discord.utils.get(member.guild.roles, name="Bizimekip")
+
+    if member.roles in [liderler, mod_role, yoldas, Zengin, guvunier, Yardimci, Bizimekip] or member.id == 751206285680181434:
         await ctx.send("Which one would you like to delete? (You must enter what number the text is)")
         try:
             number = await bot.wait_for('message', check=check, timeout=15.0)
