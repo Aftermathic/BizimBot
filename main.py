@@ -515,7 +515,11 @@ async def deleteAllRandTexts(ctx):
 keep_alive()
 
 try:
-    bot.run(os.environ['bot_token'])
+    try:
+        bot.run(os.environ['bot_token'])
+    except:
+        token = open("token.txt", "r")
+        bot.run(token.read())
 except Exception as e:
     with open("error.txt", "w") as f:
         f.write(f"{e}")
