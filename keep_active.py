@@ -9,9 +9,9 @@ def home():
     while True:
         errors = open("error.txt", "r")
         if os.stat("error.txt").st_size == 0:
-            return f"<h1>Bizim Bot Status: </h1>Errors: None"
+            return f"<h1>Bizim Bot Status: </h1>Startup Errors: None"
         else:
-            return f"<h1>Bizim Bot Status: </h1>Errors: {errors.read()}"
+            return f"<h1>Bizim Bot Status: </h1>Startup Errors: {errors.read()}"
 
 def run():
   app.run(host='0.0.0.0',port=8080)

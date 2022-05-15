@@ -358,7 +358,7 @@ async def jeton(ctx):
 @bot.command()
 async def rastgelemetin(ctx):
     num = random.randint(0, getNumTexts() - 1)
-    await ctx.send(f"{num}. {getText(num)}")
+    await ctx.send(f"Random Text Number: {num}\n{getText(num)}")
 
 @bot.command()
 async def addRandomText(ctx):
@@ -380,7 +380,7 @@ async def showAllRandText(ctx):
     text = ""
     num = 0
     while num < getNumTexts():
-        string = f"{num}. {getText(num)}"
+        string = f"Random Text Number: {num}\n{getText(num)}"
         string += "\n\n"
 
         text += string
