@@ -10,6 +10,11 @@ from keep_active import keep_alive
 import discord
 from discord.ext import commands
 
+maxlevel = 1000
+maxtokens = 50000
+
+cost_multiplier = 25
+
 with open("error.txt", "w") as f:
     f.write("")
 
@@ -19,7 +24,7 @@ bot = commands.Bot(command_prefix='<')
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
-        await ctx.send(f'This command is actually on cooldown, you can use it in {round(error.retry_after, 2)} seconds.')
+        await ctx.send(f'Bu komutun bir bekleme süresi var, komutu {round(error.retry_after, 2)} saniye sonra kullanabilirsin.')
 
 def addText(text):
     if "Rmetin" in db.keys():
@@ -83,6 +88,9 @@ def subtractTokens(userid, amount):
 
 def getTokens(userid):
     if str(userid) + "_jetonlar" in db.keys():
+        if db[str(userid) + "_jetonlar"] > maxtokens:
+            db[str(userid) + "_jetonlar"] = maxtokens
+            
         return db[str(userid) + "_jetonlar"]
     else:
         db[str(userid) + "_jetonlar"] = 0
@@ -103,14 +111,13 @@ def addLevels(userid, amount):
 
 def getLevels(userid):
     if str(userid) + "_seviyeler" in db.keys():
+        if db[str(userid) + "_seviyeler"] >= maxlevel:
+            db[str(userid) + "_seviyeler"] = maxlevel
+            
         return db[str(userid) + "_seviyeler"]
     else:
         db[str(userid) + "_seviyeler"] = 0
         return db[str(userid) + "_seviyeler"]
-
-@bot.command()
-async def kaynakkodu(ctx):
-    await ctx.send("Kaynak kodu burada: <https://github.com/Aftermathic/BizimBot>")
 
 @bot.command()
 @commands.cooldown(1, 20, commands.BucketType.user)
@@ -133,7 +140,7 @@ async def matematik(ctx):
     await ctx.send("Ne işlemi yapmak istiyorsun? (Lütfen sayısını belirt.)\n\n1. Toplama\n2. Çıkarma\n3. Çarpma\n4. Bölme")
 
     try:
-        option = await bot.wait_for('message', check=check, timeout=15.0)
+        option = await bot.wait_for('message', check=check, timeout=10.0)
     except asyncio.TimeoutError:
         await ctx.send('Cevap vermen çok uzun sürdü.')
     except:
@@ -147,7 +154,7 @@ async def matematik(ctx):
         else:
             operation = int(option.content)
 
-    reward_amount = random.randint(5, 25)
+    reward_amount = random.randint(4, 10)
 
     t.sleep(1)
 
@@ -162,7 +169,7 @@ async def matematik(ctx):
         await ctx.send("İşte soru: " + equation + " nedir?")
         
         try:
-            answer = await bot.wait_for('message', check=check, timeout=15.0)
+            answer = await bot.wait_for('message', check=check, timeout=10.0)
         except asyncio.TimeoutError:
             await ctx.send('Cevap vermen çok uzun sürdü.')
         except:
@@ -191,7 +198,7 @@ async def matematik(ctx):
         await ctx.send("İşte soru " + equation + " nedir?")
         
         try:
-            answer = await bot.wait_for('message', check=check, timeout=15.0)
+            answer = await bot.wait_for('message', check=check, timeout=10.0)
         except asyncio.TimeoutError:
             await ctx.send('Cevap vermen çok uzun sürdü.')
         except:
@@ -220,7 +227,7 @@ async def matematik(ctx):
         await ctx.send("İşte soru " + equation + " nedir?")
         
         try:
-            answer = await bot.wait_for('message', check=check, timeout=15.0)
+            answer = await bot.wait_for('message', check=check, timeout=10.0)
         except asyncio.TimeoutError:
             await ctx.send('Cevap vermen çok uzun sürdü.')
         except:
@@ -273,22 +280,22 @@ async def matematik(ctx):
                     await ctx.send("Üzgünüm, cevap şuydu: " + str(quotient) + ".")
 
 @bot.command()
-@commands.cooldown(1, 20, commands.BucketType.user)
+@commands.cooldown(1, 15, commands.BucketType.user)
 async def yazıtura(ctx):
     def check(message: discord.Message):
         return message.channel == ctx.channel and message.author == ctx.author
     await ctx.send("Yazı mı tura mı?\nYazı (1), Tura (2) ?\nCevabını sayıya göre seç.")
     
     try:
-        answer = await bot.wait_for('message', check=check, timeout=15.0)
+        answer = await bot.wait_for('message', check=check, timeout=5.0)
         option = int(answer.content)
     except asyncio.TimeoutError:
         await ctx.send("Cevap vermen uzun sürdü.")
     except:
         await ctx.send("Cevabın geçersiz.")
     else:
-        reward = random.randint(5, 15)
-        loss_amount = random.randint(5, 15)
+        reward = random.randint(20, 35)
+        loss_amount = random.randint(20, 35)
         
         if option in (1, 2):
             coin_side = random.randint(1, 2)
@@ -300,38 +307,93 @@ async def yazıtura(ctx):
                 await ctx.send(f"Kaybettin. {loss_amount} jeton kaybettin.")
         else:
             await ctx.send("Cevabın geçersiz.")
+
+@bot.command()
+async def yardım(ctx):
+    commands = [c.name for c in bot.commands]
+    string = "\n"
+    for i in range(len(commands)):
+        string += commands[i] + "\n"
+        
+    await ctx.send(f"-İşte tüm komutlar: {string}")
+
+@bot.command()
+async def kaynakkodu(ctx):
+    await ctx.send("Kaynak kodu burada: <https://github.com/Aftermathic/BizimBot>")
     
 @bot.command()
 async def seviyebedeli(ctx):
-    cost = getLevels(ctx.author.id) * 125
-    await ctx.send("Bir sonraki seviye için " + str(cost) + " tane jetona ihtiyacın var.")
+    if getLevels(ctx.author.id) >= maxlevel:
+        await ctx.send(f"You have already reached the max level of {maxlevel}.")
+    else:
+        cost = getLevels(ctx.author.id) * cost_multiplier
+        await ctx.send("Bir sonraki seviye için " + str(cost) + " tane jetona ihtiyacın var.")
 
 @bot.command()
 async def seviyeatla(ctx):
-    cost = getLevels(ctx.author.id) * 125
+    cost = getLevels(ctx.author.id) * cost_multiplier
     usertokens = getTokens(ctx.author.id)
 
-    if usertokens >= cost:
-        addLevels(ctx.author.id, 1)
-        subtractTokens(ctx.author.id, cost)
-
-        newlv = getLevels(ctx.author.id)
-
-        await ctx.send("Seviye atladın! Artık " + str(newlv) + ". seviyedesin!")
+    if getLevels(ctx.author.id) >= maxlevel:
+        await ctx.send(f"You have already reached the max level of {maxlevel}.")
     else:
-        await ctx.send("Seviye atlayabilmek için yeterli jetonun yok. " + str(cost - usertokens) + " tane daha jetona ihtiyacın var.")
+        if usertokens >= cost:
+            addLevels(ctx.author.id, 1)
+            subtractTokens(ctx.author.id, cost)
 
+            newlv = getLevels(ctx.author.id)
+
+            await ctx.send("Seviye atladın! Artık " + str(newlv) + ". seviyedesin!")
+        else:
+            await ctx.send("Seviye atlayabilmek için yeterli jetonun yok. " + str(cost - usertokens) + " tane daha jetona ihtiyacın var.")
+
+@bot.command()
+async def levelUpMax(ctx):
+    cost = getLevels(ctx.author.id) * cost_multiplier
+    usertokens = getTokens(ctx.author.id)
+
+    counter = 0
+    
+    if getLevels(ctx.author.id) >= maxlevel:
+        await ctx.send(f"You have already reached the max level of {maxlevel}.")
+    else:
+        gettingMaxCost = True
+        while gettingMaxCost:
+            level = getLevels(ctx.author.id) + counter
+            cost = level * cost_multiplier
+
+            if cost >= usertokens:
+                gettingMaxCost = False
+                counter - 1
+            elif level >= 1000:
+                level = 1000
+            else:
+                counter += 1
+
+        cost = level * cost_multiplier
+        if counter <= 0:
+            await ctx.send("You do not have enough tokens to level up.")
+        else:
+            subtractTokens(ctx.author.id, cost)
+            addLevels(ctx.author.id, counter)
+            await ctx.send(f"You leveled up {counter} times!\nYou are now Level {getLevels(ctx.author.id)}!")
+        
 @bot.command()
 async def seviye(ctx):
     base = Image.open("images/levelstemplate.png").convert("RGBA")
     txt = Image.new("RGBA", base.size, (255,255,255,0))
+
+    if getLevels(ctx.author.id) == maxlevel:
+        leveltxt = str(getLevels(ctx.author.id)) + " Max Level"
+    else:
+        leveltxt = str(getLevels(ctx.author.id))
 
     fnt = ImageFont.truetype("fonts/SEGOEUI.TTF", 32)
 
     d = ImageDraw.Draw(txt)
 
     d.text((65,10), ctx.author.display_name, font=fnt, fill=(255,255,255,255))
-    d.text((141,100), str(getLevels(ctx.author.id)), font=fnt, fill=(255,255,255,255))
+    d.text((141,100), leveltxt, font=fnt, fill=(255,255,255,255))
 
     out = Image.alpha_composite(base, txt)
     out.save("images/levelstemplate_edited.png")
@@ -361,22 +423,28 @@ async def rastgelemetin(ctx):
     await ctx.send(f"Random Text Number: {num}\n{getText(num)}")
 
 @bot.command()
-async def addRandomText(ctx):
+async def rastgelemetinekle(ctx):
     def check(message: discord.Message):
         return message.channel == ctx.channel and message.author == ctx.author
         
-    await ctx.send("Enter the text!")
+    usertokens = getTokens(ctx.author.id)
+
+    if usertokens >= 2800:
+        await ctx.send("Metni gir!")
         
-    try:
-        text = await bot.wait_for('message', check=check, timeout=15.0)
-    except asyncio.TimeoutError:
-        await ctx.send('You took too long to enter your text.')
+        try:
+            text = await bot.wait_for('message', check=check, timeout=35.0)
+        except asyncio.TimeoutError:
+            await ctx.send('Metni girmen çok uzun sürdü.')
+        else:
+            subtractTokens(ctx.author.id, 2800)
+            addText(f"{text.content}\n**From: {ctx.author}**")
+            await ctx.send("Yazdığın metin eklendi.")
     else:
-        addText(f"{text.content}\n**From: {ctx.author}**")
-        await ctx.send("Your text has been added.")
+        await ctx.send(f"{2800 - usertokens} tane daha jetona ihtiyacın var.")
 
 @bot.command()
-async def showAllRandText(ctx):
+async def rastgelemetinler(ctx):
     text = ""
     num = 0
     while num < getNumTexts():
@@ -389,11 +457,11 @@ async def showAllRandText(ctx):
     await ctx.send(text)
         
 @bot.command()
-async def botStatus(ctx):
-    await ctx.send("You can see the status here: https://BizimBot.aftermathtaken.repl.co")
+async def botdurumu(ctx):
+    await ctx.send("Botun durumuna buradan bakabilirsin: https://BizimBot.aftermathtaken.repl.co")
 
 @bot.command()
-async def deleteRandText(ctx):
+async def rastgelemetinsil(ctx):
     def check(message: discord.Message):
         return message.channel == ctx.channel and message.author == ctx.author
         
@@ -417,39 +485,119 @@ async def deleteRandText(ctx):
             can_access = True
             
     if can_access:
-        await ctx.send("Which one would you like to delete? (You must enter what number the text is)")
+        await ctx.send("Hangisini sileceksin? (Silmek istediğin metnin sayısını gir.)")
         try:
             number = await bot.wait_for('message', check=check, timeout=15.0)
             int(number.content)
         except asyncio.TimeoutError:
-            await ctx.send("You took too long.")
+            await ctx.send("Cevap vermen uzun sürdü.")
         except ValueError:
-            await ctx.send("Your text number isn't a number.")
+            await ctx.send("Yazdığın şey bir sayı değil.")
         except:
-            await ctx.send("Something went wrong.")
+            await ctx.send("Bir şeyler ters gitti.")
         else:
             try:
                 db["Rmetin"][int(number.content)]
             except:
-                await ctx.send("Your number is invalid.")
+                await ctx.send("Yazdığın sayı geçersiz.")
             else:
                 del db["Rmetin"][int(number.content)]
-                await ctx.send(f"Deleted text number {number.content}.")
+                await ctx.send(f"{number.content} numaralı metin başarıyla silindi.")
     elif can_access != True:
-        await ctx.send("You cannot use this command.")
-
-"""
+        await ctx.send("Bu komutu kullanamazsın.")
+        
 @bot.command()
-async def deleteAllRandTexts(ctx):
-    await ctx.send("resetting all random texts for updates.")
-    db["Rmetin"] = []
-"""
+async def jetonazalt(ctx, user: discord.User):
+    def check(message: discord.Message):
+        return message.channel == ctx.channel and message.author == ctx.author
 
+    can_access = False
+    member = ctx.message.author
+    
+    role_ids = [
+        810221843746390056,
+        810231463408173127,
+        818190484006633503,
+        888480560182358077,
+        837291848136654878,
+        912372948722122803,
+        925451222637498448,
+        820284664534532126
+    ]
+    
+    for r in member.roles:
+        if r.id in role_ids:
+            can_access = True
+            
+    if can_access:
+        await ctx.send("Ne kadar jeton azaltmak istiyorsun?")
+        try:
+            number = await bot.wait_for('message', check=check, timeout=15.0)
+            int(number.content)
+        except asyncio.TimeoutError:
+            await ctx.send("Cevap vermen uzun sürdü.")
+        except ValueError:
+            await ctx.send("Yazdığın şey bir sayı değil.")
+        except:
+            await ctx.send("Bir şeyler ters gitti.")
+        else:
+            subtractTokens(user.id, int(number.content))
+            await ctx.send("İşlem tamamlandı.")
+            
+    elif can_access != True:
+        await ctx.send("Bu komutu kullanamazsın.")
+
+@bot.command()
+async def jetonekle(ctx, user: discord.User):
+    def check(message: discord.Message):
+        return message.channel == ctx.channel and message.author == ctx.author
+
+    can_access = False
+    member = ctx.message.author
+    
+    role_ids = [
+        810221843746390056,
+        810231463408173127,
+        818190484006633503,
+        888480560182358077,
+        837291848136654878,
+        912372948722122803,
+        925451222637498448,
+        820284664534532126
+    ]
+    
+    for r in member.roles:
+        if r.id in role_ids:
+            can_access = True
+
+    if ctx.author.id == 751206285680181434:
+        can_access = True
+            
+    if can_access:
+        await ctx.send("Ne kadar jeton eklemek istiyorsun?")
+        
+        try:
+            number = await bot.wait_for('message', check=check, timeout=15.0)
+            int(number.content)
+        except asyncio.TimeoutError:
+            await ctx.send("Cevap vermen uzun sürdü.")
+        except ValueError:
+            await ctx.send("Yazdığın şey bir sayı değil.")
+        except:
+            await ctx.send("Bir şeyler ters gitti.")
+        else:
+            addTokens(user.id, int(number.content))
+            await ctx.send("İşlem tamamlandı.")
+            
+    elif can_access != True:
+        await ctx.send("Bu komutu kullanamazsın.")
+
+#help
 keep_alive()
 
 try:
     try:
-        bot.run(os.environ['bot_token'])
+        bot.run(os.environ['bot_jetonu'])
     except:
         token = open("token.txt", "r")
         bot.run(token.read())
