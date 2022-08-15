@@ -3,7 +3,6 @@ from PIL import Image, ImageDraw, ImageFont
 import asyncio
 import time as t
 import random
-
 from replit import db
 
 from keep_active import keep_alive
