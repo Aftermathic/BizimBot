@@ -311,7 +311,7 @@ async def yazıtura(ctx):
 @bot.command()
 async def yardım(ctx):
     commands = [c.name for c in bot.commands]
-    string = "\n"
+    string = "\n\n"
     for i in range(len(commands)):
         string += commands[i] + "\n"
         
